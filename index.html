@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<body style="background:black;color:white;font-family:Arial">
+<h2>Arbitrage Monitor</h2>
+<pre id="data">Loading...</pre>
+
+<script>
+async function load(){
+  let r = await fetch("http://localhost:3000");
+  let d = await r.json();
+  document.getElementById("data").innerText =
+    "Binance: " + d.binance +
+    "\nOKX: " + d.okx +
+    "\nDifference: " + d.diff + " USDT";
+}
+load();
+setInterval(load,5000);
+</script>
+</body>
+</html>
