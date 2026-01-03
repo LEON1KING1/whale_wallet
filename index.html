@@ -1,20 +1,98 @@
 <!DOCTYPE html>
-<html>
-<body style="background:black;color:white;font-family:Arial">
-<h2>Arbitrage Monitor</h2>
-<pre id="data">Loading...</pre>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>Crypto Arbitrage</title>
+<style>
+body {
+  background:#0f172a;
+  color:#fff;
+  font-family: Arial;
+  padding:15px;
+}
+table {
+  width:100%;
+  border-collapse:collapse;
+}
+th, td {
+  padding:8px;
+  border-bottom:1px solid #334155;
+  text-align:center;
+}
+th { background:#020617; }
+.green { color:#22c55e; }
+.red { color:#ef4444; }
+button {
+  background:#2563eb;
+  color:#fff;
+  border:none;
+  padding:5px 8px;
+  cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<h3>📊 Crypto Arbitrage Monitor</h3>
+
+<table>
+<thead>
+<tr>
+<th>Coin</th>
+<th>Price</th>
+<th>Buy</th>
+<th>Sell</th>
+<th>Profit</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="rows"></tbody>
+</table>
 
 <script>
+const coins = [
+  { id:"bitcoin", symbol:"BTC", url:"https://www.binance.com/en/trade/BTC_USDT" },
+  { id:"ethereum", symbol:"ETH", url:"https://www.binance.com/en/trade/ETH_USDT" },
+  { id:"solana", symbol:"SOL", url:"https://www.binance.com/en/trade/SOL_USDT" },
+  { id:"toncoin", symbol:"TON", url:"https://www.binance.com/en/trade/TON_USDT" }
+];
+
 async function load(){
-  let r = await fetch("http://localhost:3000");
-  let d = await r.json();
-  document.getElementById("data").innerText =
-    "Binance: " + d.binance +
-    "\nOKX: " + d.okx +
-    "\nDifference: " + d.diff + " USDT";
+  const ids = coins.map(c=>c.id).join(",");
+  const r = await fetch(
+    `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`
+  );
+  const data = await r.json();
+
+  let html = "";
+  coins.forEach(c=>{
+    const price = data[c.id].usd;
+    const buy = (price * 0.995).toFixed(2);
+    const sell = (price * 1.005).toFixed(2);
+    const profit = (sell - buy).toFixed(2);
+
+    html += `
+    <tr>
+      <td>${c.symbol}</td>
+      <td>${price}</td>
+      <td class="green">${buy}</td>
+      <td class="green">${sell}</td>
+      <td class="${profit>0?'green':'red'}">${profit}$</td>
+      <td>
+        <button onclick="window.open('${c.url}','_blank')">
+          Convert
+        </button>
+      </td>
+    </tr>
+    `;
+  });
+
+  document.getElementById("rows").innerHTML = html;
 }
+
 load();
-setInterval(load,5000);
+setInterval(load,15000);
 </script>
+
 </body>
 </html>
